@@ -1,0 +1,46 @@
+# Continuous Integration Workflow for the Openjpa Project
+#
+# This workflow automates the build and test process using Apache Maven.
+# It is configured to execute on every push and pull request targeting the 'master' branch.
+# The primary job consists of setting up the build environment, compiling the source code,
+# executing unit tests via the Surefire plugin, and archiving the resulting test reports.
+
+name: Java CI Build with Maven
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build with Maven
+        run: mvn clean verify
+
+      - name: Upload Surefire Test Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-report
+          path: '**/target/surefire-reports/'
+          if-no-files-found: 'warn'

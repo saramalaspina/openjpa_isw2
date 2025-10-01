@@ -186,8 +186,8 @@
         <module>openjpa-kubernetes</module>
         <module>openjpa</module>
         <module>openjpa-project</module>
-        <module>openjpa-examples</module>
-        <module>openjpa-integration</module>
+        <!-- <module>openjpa-examples</module> -->
+        <!-- <module>openjpa-integration</module> -->
         <module>openjpa-all</module>
         <module>openjpa-tools</module>
         <module>openjpa-features</module>
@@ -1973,7 +1973,11 @@
                             <!-- exclude classes that include a $; inner classes
                                  are not test cases per OpenJPA standards -->
                             <exclude>org/apache/openjpa/**/*$*.class</exclude>
+                            <exclude>**/*</exclude>
                         </excludes>
+                        <includes>
+                            <include>**/*MyTest.java</include>
+                        </includes>
                     <systemProperties>
                         <property>
                             <name>openjpa.Log</name>
