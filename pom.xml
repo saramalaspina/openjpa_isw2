@@ -1754,6 +1754,37 @@
             </repositories>
         </profile>
 
+        <profile>
+            <id>jacoco</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.12</version>
+                        <configuration>
+                            <propertyName>argLine</propertyName>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>report</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
     </profiles>
 
     <!-- default versions for dependencies that child modules may include -->
@@ -1965,18 +1996,12 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
-                        <argLine>${surefire.jvm.args}</argLine>
+                        <argLine>${argLine} ${surefire.jvm.args}</argLine>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <trimStackTrace>false</trimStackTrace>
                         <useSystemClassLoader>true</useSystemClassLoader>
-                        <excludes>
-                            <!-- exclude classes that include a $; inner classes
-                                 are not test cases per OpenJPA standards -->
-                            <exclude>org/apache/openjpa/**/*$*.class</exclude>
-                            <exclude>**/*</exclude>
-                        </excludes>
                         <includes>
-                            <include>**/*MyTest.java</include>
+                            <include>**/isw/**/*.java</include>
                         </includes>
                     <systemProperties>
                         <property>
