@@ -1754,6 +1754,7 @@
             </repositories>
         </profile>
 
+        <!-- Jacoco profile -->
         <profile>
             <id>jacoco</id>
             <build>
@@ -1762,15 +1763,15 @@
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
                         <version>0.8.12</version>
-                        <configuration>
-                            <propertyName>argLine</propertyName>
-                        </configuration>
                         <executions>
                             <execution>
                                 <id>prepare-agent</id>
                                 <goals>
                                     <goal>prepare-agent</goal>
                                 </goals>
+                                <configuration>
+                                    <propertyName>jacoco.agent.argLine</propertyName>
+                                </configuration>
                             </execution>
                             <execution>
                                 <id>report</id>
@@ -1780,6 +1781,14 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <argLine>${jacoco.agent.argLine} ${surefire.jvm.args}</argLine>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
@@ -1996,7 +2005,7 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
-                        <argLine>${argLine} ${surefire.jvm.args}</argLine>
+                        <argLine>${surefire.jvm.args}</argLine>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <trimStackTrace>false</trimStackTrace>
                         <useSystemClassLoader>true</useSystemClassLoader>
