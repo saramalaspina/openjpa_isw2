@@ -20,19 +20,45 @@
 package isw.org.apache.openjpa.util;
 
 import org.apache.openjpa.util.CacheMap;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+@DisplayName("Tests for the CacheMap Constructor")
 class CacheMapConstructorTest {
 
-    @Test
-    public void testDefaultConstructor() {
-        CacheMap map = new CacheMap();
+    private static Stream<Arguments> provideConstructorArguments() {
+        return Stream.of(
+                // The structure of the arguments is:
+                // Test Name, lru, max, expectedCacheSize
+                Arguments.of("LRU with Unlimited Cache", true, -1, IllegalArgumentException.class, -1),
+                Arguments.of("Non-LRU with Disabled Cache", false, 0, null, 0),
+                Arguments.of("LRU with Minimum Positive Cache", true, 2, null, 2),
+                Arguments.of("Non-LRU with Typical Cache Size", false, 100, null, 100)
+        );
+    }
 
-        assertNotNull(map);
-        assertTrue(map.isEmpty());
+    @ParameterizedTest(name = "{index}: {0}")
+    @MethodSource("provideConstructorArguments")
+    void constructorShouldInitializeStateCorrectly(String testName, boolean lru, int max,  Class<? extends Throwable> expectedException, int expectedCacheSize) {
+        if (expectedException != null) {
+            assertThrows(expectedException, () -> {
+                new CacheMap(lru, max);
+            }, "An exception of type " + expectedException.getSimpleName() + " was expected for this configuration.");
+        } else {
+            CacheMap map = new CacheMap(lru, max);
+            assertAll("State verification for: " + testName,
+                    () -> assertNotNull(map, "The CacheMap object should not be null."),
+                    () -> assertTrue(map.isEmpty(), "A newly created map should be empty."),
+                    () -> assertEquals(lru, map.isLRU(), "The LRU state is not as expected."),
+                    () -> assertEquals(expectedCacheSize, map.getCacheSize(), "The main cache size is not as expected."),
+                    () -> assertEquals(-1, map.getSoftReferenceSize(), "The soft cache size is not as expected.")
+            );
+        }
     }
 }
-
