@@ -1,0 +1,208 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+package isw.org.apache.openjpa.util;
+
+import org.apache.openjpa.util.CacheMap;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+
+@DisplayName("Tests for the CacheMap.put() method")
+class CacheMapPutTest {
+
+    private static class InspectableCacheMap extends CacheMap {
+        public InspectableCacheMap(boolean lru, int max) {
+            super(lru, max);
+        }
+
+        public Map<Object, Object> getInternalCacheMap() {
+            return this.cacheMap;
+        }
+
+        public Map<Object, Object> getInternalSoftMap() {
+            return this.softMap;
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Robustness and Edge Cases")
+    class RobustnessTests {
+
+        @Test
+        @DisplayName("put() with null key should not throw NullPointerException")
+        void putWithNullKeyShouldNotThrowNPE() {
+            CacheMap map = new CacheMap(true, 100);
+            map.put(null, 10);
+
+            assertEquals(1, map.size(), "Map size should be 1 after adding a null key.");
+            assertTrue(map.containsKey(null), "Map must report that it contains the null key.");
+            assertEquals(10, map.get(null), "The value associated with the null key must be correct.");
+        }
+
+        @Test
+        @DisplayName("put() with null value should not throw NullPointerException")
+        void putWithNullValueShouldNotThrowNPE() {
+            CacheMap map = new CacheMap(true, 100);
+            map.put("new_key", null);
+
+            assertEquals(1, map.size(), "Map size should be 1 after adding a null key.");
+            assertNull(map.get("new_key"), "The value associated with the key must be null.");
+        }
+
+        @Test
+        @DisplayName("put() on a disabled cache (maxSize=0) should do nothing")
+        void putOnDisabledCacheShouldDoNothing() {
+            CacheMap map = new CacheMap(false, 0);
+            Object result = map.put("new_key", 10);
+
+            assertNull(result, "The return value should be null as the cache is disabled.");
+            assertTrue(map.isEmpty(), "The element should not be inserted in a disabled cache.");
+        }
+    }
+
+    @Nested
+    @DisplayName("Basic Operations (No Overflow)")
+    class BasicOperationTests {
+
+        @Test
+        @DisplayName("put() on an empty map should insert the element")
+        void putOnEmptyMapShouldInsertElement() {
+            CacheMap map = new CacheMap(false, 100);
+            Object oldValue = map.put("new_key", "isw");
+
+            assertNull(oldValue, "Putting a new key should return null.");
+            assertEquals(1, map.size());
+            assertEquals("isw", map.get("new_key"));
+        }
+
+        @Test
+        @DisplayName("put() on an existing key in cacheMap should update the value")
+        void putOnExistingKeyInCacheMapShouldUpdateValue() {
+            CacheMap map = new CacheMap(true, 2);
+            map.put("key_in_cacheMap", "old_value");
+            Object oldValue = map.put("key_in_cacheMap", 10);
+
+            assertEquals("old_value", oldValue, "The old value should be returned.");
+            assertEquals(1, map.size(), "The map size should not change.");
+            assertEquals(10, map.get("key_in_cacheMap"), "The value should be updated.");
+        }
+    }
+
+    @Nested
+    @DisplayName("Overflow Scenarios")
+    class OverflowTests {
+
+        @Test
+        @DisplayName("put() on a full LRU map should evict to an empty softMap")
+        void putOnFullLruMapShouldEvictToSoftMap() {
+            InspectableCacheMap map = new InspectableCacheMap(true, 2);
+            map.put("K1", "V1"); // K1 is the least recently used
+            map.put("K2", "V2");
+
+            map.put("new_key", 10); // This should evict K1 because of the LRU policy
+
+            assertEquals(3, map.size(), "Total size should be 3 (2 in cacheMap, 1 in softMap).");
+            assertTrue(map.getInternalCacheMap().containsKey("K2") && map.getInternalCacheMap().containsKey("new_key"));
+            assertTrue(map.getInternalSoftMap().containsKey("K1"));
+        }
+
+        @Test
+        @DisplayName("put() on a full map with a full softMap should cause cascade eviction")
+        void putOnFullMapWithFullSoftMapShouldCauseCascadeEviction() {
+            CacheMap map = new CacheMap(false, 2); // non-LRU map
+            map.setSoftReferenceSize(2); // Set a limit to the softMap
+
+            // Fill both caches completely
+            map.put("K1", "V1");
+            map.put("K2", "V2");
+            map.put("K3", "V3"); // Evicts K1 or K2 to softMap
+            map.put("K4", "V4"); // Evicts the other to softMap. softMap is now full.
+
+            map.put("new_key", "isw"); // This will cause a cascade eviction.
+
+            assertEquals(4, map.size(), "Total size should not exceed the combined max sizes (2+2).");
+            assertTrue(map.containsKey("new_key"), "The new element must be in the map.");
+            // We can't know which element was definitively removed because of the non-LRU policy, but we know one was.
+            // A simple check is that the total count of original keys is now 3 instead of 4.
+            long originalKeysPresent = Stream.of("K1", "K2", "K3", "K4").filter(map::containsKey).count();
+            assertEquals(3, originalKeysPresent, "One of the original 4 keys must have been definitively evicted.");
+        }
+    }
+
+    @Nested
+    @DisplayName("State Interaction Scenarios")
+    class StateInteractionTests {
+
+        @Test
+        @DisplayName("put() on an existing key in softMap should promote it to cacheMap")
+        void putOnExistingKeyInSoftMapShouldPromoteIt() {
+            InspectableCacheMap map = new InspectableCacheMap(true, 2);
+            map.put("key_in_softMap", "old_value");
+            map.put("K1", "value1");
+            map.put("K2", "value2"); // Evicts "key_in_softMap" (LRU) to softMap
+
+            Object oldValue = map.put("key_in_softMap", "isw"); // "key_in_softMap" returns to cacheMap and evicts "K1" (LRU) to softMap
+
+            assertEquals("old_value", oldValue, "The old value should be returned.");
+            assertEquals("isw", map.get("key_in_softMap"), "The value should be updated.");
+            assertFalse(map.getInternalSoftMap().containsKey("key_in_softMap"));
+            assertTrue(map.getInternalCacheMap().containsKey("key_in_softMap"));
+            assertEquals(3, map.size(), "Total size should remain 3.");
+        }
+
+        @Test
+        @DisplayName("put() on a pinned key should update its value and keep it pinned, when old value added first in cacheMap")
+        void putOnPinnedKeyShouldUpdateValue() {
+            InspectableCacheMap map = new InspectableCacheMap(false, 10);
+            map.put("key_in_pinnedMap", "old_value");
+            map.pin("key_in_pinnedMap");
+
+            Object oldValue = map.put("key_in_pinnedMap", 10);
+
+            assertEquals("old_value", oldValue, "The old value should be returned.");
+            assertEquals(1, map.size(), "Map size should not change.");
+            assertEquals(10, map.get("key_in_pinnedMap"), "The value should be updated.");
+            assertFalse(map.getInternalCacheMap().containsKey("key_in_pinnedMap"));
+            assertTrue(map.getPinnedKeys().contains("key_in_pinnedMap"), "The key should remain in the pinned set.");
+        }
+
+        // Test added after first Jacoco report
+        @Test
+        @DisplayName("put() on a pinned key with no value should add the value directly in pinnedMap")
+        void putOnPinnedKeyWithNoValue() {
+            InspectableCacheMap map = new InspectableCacheMap(false, 10);
+            map.pin("key_in_pinnedMap");
+            Object oldValue = map.put("key_in_pinnedMap", 10);
+
+            assertNull(oldValue, "Old value should be null");
+            assertEquals(1, map.size(), "Map size should be 1 after adding value to pinned key.");
+            assertEquals(10, map.get("key_in_pinnedMap"), "The value should be correct.");
+            assertFalse(map.getInternalCacheMap().containsKey("key_in_pinnedMap"));
+            assertTrue(map.getPinnedKeys().contains("key_in_pinnedMap"), "The key should remain in the pinned set.");
+        }
+    }
+}
