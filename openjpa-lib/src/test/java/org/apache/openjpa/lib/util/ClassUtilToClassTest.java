@@ -22,13 +22,13 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class ClassUtilTest {
+public class ClassUtilToClassTest {
 
     @Test
     public void testToClass() {
         Assert.assertEquals(this.getClass(), toClass("org.apache.openjpa.lib.util.ClassUtilTest"));
 
-        Assert.assertEquals(new ClassUtilTest[0].getClass(), toClass("org.apache.openjpa.lib.util.ClassUtilTest[]"));
+        Assert.assertEquals(new ClassUtilToClassTest[0].getClass(), toClass("org.apache.openjpa.lib.util.ClassUtilTest[]"));
 
         Assert.assertEquals(Integer.class, toClass("java.lang.Integer"));
 
@@ -58,7 +58,7 @@ public class ClassUtilTest {
 
     @Test
     public void testGetClassName() {
-        Assert.assertEquals("ClassUtilTest", ClassUtil.getClassName(ClassUtilTest.class));
+        Assert.assertEquals("ClassUtilTest", ClassUtil.getClassName(ClassUtilToClassTest.class));
         Assert.assertEquals("ClassUtilTest$MyInnerClass", ClassUtil.getClassName(MyInnerClass.class));
 
         // anonymous class
@@ -80,7 +80,7 @@ public class ClassUtilTest {
         Assert.assertEquals("long[][]", ClassUtil.getClassName(long[][].class));
         Assert.assertEquals("float[][][]", ClassUtil.getClassName(float[][][].class));
 
-        Assert.assertEquals("ClassUtilTest[]", ClassUtil.getClassName(ClassUtilTest[].class));
+        Assert.assertEquals("ClassUtilTest[]", ClassUtil.getClassName(ClassUtilToClassTest[].class));
         Assert.assertEquals("ClassUtilTest$MyInnerClass[]", ClassUtil.getClassName(MyInnerClass[].class));
         Assert.assertEquals("ClassUtilTest$MyInnerClass[][]", ClassUtil.getClassName(MyInnerClass[][].class));
     }
@@ -101,7 +101,7 @@ public class ClassUtilTest {
 
     @Test
     public void testGetPackageName() {
-        Assert.assertEquals("org.apache.openjpa.lib.util", ClassUtil.getPackageName(ClassUtilTest.class));
+        Assert.assertEquals("org.apache.openjpa.lib.util", ClassUtil.getPackageName(ClassUtilToClassTest.class));
         Assert.assertEquals("org.apache.openjpa.lib.util", ClassUtil.getPackageName(MyInnerClass.class));
         Assert.assertEquals("org.apache.openjpa.lib.util", ClassUtil.getPackageName(MyInnerClass[].class));
         Assert.assertEquals("org.apache.openjpa.lib.util", ClassUtil.getPackageName(INSTANCE.getClass()));
