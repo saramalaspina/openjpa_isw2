@@ -135,7 +135,7 @@
                             </targetClasses>
 
                             <targetTests>
-                                <param>isw.org.apache.openjpa.lib.util.*</param>
+                                <param>org.apache.openjpa.lib.util.*</param>
                             </targetTests>
 
                             <outputFormats>

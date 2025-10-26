@@ -17,9 +17,8 @@
  * under the License.
  */
 
-package isw.org.apache.openjpa.lib.util;
+package org.apache.openjpa.lib.util;
 
-import org.apache.openjpa.lib.util.ClassUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -36,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * JUnit 5 test case for {@link ClassUtil#toClass(String, boolean, ClassLoader)}.
  */
-class LLMZeroShotClassUtilTest {
+class LLMZeroShotClassUtilISWTest {
 
     // A public static nested class for testing purposes
     public static class NestedTestClass {

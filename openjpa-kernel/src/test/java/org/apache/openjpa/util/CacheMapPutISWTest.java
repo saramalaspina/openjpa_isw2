@@ -17,23 +17,19 @@
  * under the License.
  */
 
-package isw.org.apache.openjpa.util;
+package org.apache.openjpa.util;
 
-import org.apache.openjpa.util.CacheMap;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 
 @DisplayName("Tests for the CacheMap.put() method")
-class CacheMapPutTest {
+class CacheMapPutISWTest {
 
     private static class InspectableCacheMap extends CacheMap {
 
@@ -43,14 +39,6 @@ class CacheMapPutTest {
 
         public InspectableCacheMap(boolean lru, int max) {
             super(lru, max);
-        }
-
-        public Map<Object, Object> getInternalCacheMap() {
-            return this.cacheMap;
-        }
-
-        public Map<Object, Object> getInternalSoftMap() {
-            return this.softMap;
         }
 
         @Override
@@ -163,8 +151,8 @@ class CacheMapPutTest {
             map.put("new_key", 10); // This should evict K1 because of the LRU policy
 
             assertEquals(3, map.size(), "Total size should be 3 (2 in cacheMap, 1 in softMap).");
-            assertTrue(map.getInternalCacheMap().containsKey("K2") && map.getInternalCacheMap().containsKey("new_key"));
-            assertTrue(map.getInternalSoftMap().containsKey("K1"));
+            assertTrue(map.cacheMap.containsKey("K2") && map.cacheMap.containsKey("new_key"));
+            assertTrue(map.softMap.containsKey("K1"));
             assertEquals(1, map.addedCounter, "entryAdded should be called once for the new entries.");
             assertEquals(0, map.removedCounter, "entryRemoved should not be called on a overflow.");
         }
@@ -214,8 +202,8 @@ class CacheMapPutTest {
 
             assertEquals("old_value", oldValue, "The old value should be returned.");
             assertEquals("isw", map.get("key_in_softMap"), "The value should be updated.");
-            assertFalse(map.getInternalSoftMap().containsKey("key_in_softMap"));
-            assertTrue(map.getInternalCacheMap().containsKey("key_in_softMap"));
+            assertFalse(map.softMap.containsKey("key_in_softMap"));
+            assertTrue(map.cacheMap.containsKey("key_in_softMap"));
             assertEquals(3, map.size(), "Total size should remain 3.");
             assertEquals(1, map.addedCounter, "entryAdded should be called for the promoted value.");
             assertEquals(1, map.removedCounter, "entryRemoved should be called for the old value from softMap.");
@@ -235,7 +223,7 @@ class CacheMapPutTest {
             assertEquals("old_value", oldValue, "The old value should be returned.");
             assertEquals(1, map.size(), "Map size should not change.");
             assertEquals(10, map.get("key_in_pinnedMap"), "The value should be updated.");
-            assertFalse(map.getInternalCacheMap().containsKey("key_in_pinnedMap"));
+            assertFalse(map.cacheMap.containsKey("key_in_pinnedMap"));
             assertTrue(map.getPinnedKeys().contains("key_in_pinnedMap"), "The key should remain in the pinned set.");
             assertEquals(1, map.addedCounter, "entryAdded should be called for the updated pinned value.");
             assertEquals(1, map.removedCounter, "entryRemoved should be called for the old pinned value.");
@@ -252,7 +240,7 @@ class CacheMapPutTest {
             assertNull(oldValue, "Old value should be null");
             assertEquals(1, map.size(), "Map size should be 1 after adding value to pinned key.");
             assertEquals(10, map.get("key_in_pinnedMap"), "The value should be correct.");
-            assertFalse(map.getInternalCacheMap().containsKey("key_in_pinnedMap"));
+            assertFalse(map.cacheMap.containsKey("key_in_pinnedMap"));
             assertTrue(map.getPinnedKeys().contains("key_in_pinnedMap"), "The key should remain in the pinned set.");
             assertEquals(1, map.addedCounter, "entryAdded should be called once when value is first set for a pinned key.");
             assertEquals(0, map.removedCounter, "entryRemoved should not be called when a pinned key gets its first value.");

@@ -17,9 +17,8 @@
  * under the License.
  */
 
-package isw.org.apache.openjpa.lib.util;
+package org.apache.openjpa.lib.util;
 
-import org.apache.openjpa.lib.util.ClassUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -32,7 +31,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Tests for the ClassUtil.toClass() method")
-class ClassUtilToClassTest {
+class ClassUtilToClassISWTest {
 
     // ClassLoader that will fail to load any class
     private static final ClassLoader emptyClassLoader = new URLClassLoader(new URL[0], null);
@@ -49,7 +48,7 @@ class ClassUtilToClassTest {
                 Arguments.of("Null class name", null, true, systemClassLoader, null, NullPointerException.class),
                 Arguments.of("Empty class name", "", false, systemClassLoader, null, IllegalArgumentException.class),
                 Arguments.of("Non-existent class name", "com.NonExistentClass", true, systemClassLoader, null, IllegalArgumentException.class),
-                Arguments.of("Failing ClassLoader (Mock) for a project class", "org.apache.openjpa.lib.util.ClassUtil", false, emptyClassLoader, null, IllegalArgumentException.class),
+                Arguments.of("Failing ClassLoader for a project class", "org.apache.openjpa.lib.util.ClassUtil", false, emptyClassLoader, null, IllegalArgumentException.class),
 
                 // === Success Scenarios ===
                 Arguments.of("Standard reference type with system loader", "org.apache.openjpa.lib.util.ClassUtil", false, systemClassLoader, ClassUtil.class, null),

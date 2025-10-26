@@ -17,11 +17,9 @@
  * under the License.
  */
 
-package isw.org.apache.openjpa.util;
+package org.apache.openjpa.util;
 
-import org.apache.openjpa.util.CacheMap;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -31,7 +29,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Tests for the CacheMap.setSoftReferenceSize() method")
-class CacheMapSetSoftReferenceSizeTest {
+class CacheMapSetSoftReferenceSizeISWTest {
 
     private static Stream<Arguments> provideSizeArguments() {
         return Stream.of(

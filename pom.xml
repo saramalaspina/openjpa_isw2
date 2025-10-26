@@ -1792,6 +1792,9 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <argLine>${jacoco.agent.argLine} ${surefire.jvm.args}</argLine>
+                            <includes>
+                                <include>**/*ISWTest.java</include>
+                            </includes>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -2014,7 +2017,7 @@
                         <trimStackTrace>false</trimStackTrace>
                         <useSystemClassLoader>true</useSystemClassLoader>
                         <includes>
-                            <include>**/isw/**/*.java</include>
+                            <include>**/*ISWTest.java</include>
                         </includes>
                     <systemProperties>
                         <property>

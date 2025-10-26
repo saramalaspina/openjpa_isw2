@@ -17,9 +17,8 @@
  * under the License.
  */
 
-package isw.org.apache.openjpa.util;
+package org.apache.openjpa.util;
 
-import org.apache.openjpa.util.CacheMap;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -30,7 +29,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Tests for the CacheMap Constructor")
-class CacheMapConstructorTest {
+class CacheMapConstructorISWTest {
 
     private static Stream<Arguments> provideConstructorArguments() {
         return Stream.of(
