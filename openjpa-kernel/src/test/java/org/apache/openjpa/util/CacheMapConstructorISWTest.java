@@ -34,7 +34,7 @@ class CacheMapConstructorISWTest {
     private static Stream<Arguments> provideConstructorArguments() {
         return Stream.of(
                 // The structure of the arguments is:
-                // Test Name, lru, max, expectedCacheSize, expectedException
+                // Test Name, lru, max, expectedException, expectedCacheSize
                 Arguments.of("LRU with Unlimited Cache but Invalid Size", true, -1, IllegalArgumentException.class, -1),
                 Arguments.of("Non-LRU with Disabled Cache", false, 0, null, 0),
                 Arguments.of("LRU with Minimum Positive Cache", true, 2, null, 2),
